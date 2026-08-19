@@ -1,0 +1,6 @@
+{
+  "name": "Fenk - سوق المتاجر والخدمات والحرفيين",
+  "description": "منصة التجارة الإلكترونية وسوق الخدمات والمتاجر والحرفيين متعدد البائعين",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
