@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import fenkLogo from '../assets/images/fenk_logo_1787158316546.jpg';
 import {
   Store as StoreIcon,
   ShoppingBag,
@@ -16,7 +17,8 @@ import {
   PlusCircle,
   Home,
   Package,
-  Compass
+  Compass,
+  Crown
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -48,8 +50,13 @@ export const Navbar: React.FC = () => {
             onClick={() => navigateTo('home')}
             className="flex items-center gap-3 cursor-pointer group shrink-0 select-none"
           >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#00d4c8] to-[#00b8ad] flex items-center justify-center font-black text-2xl text-[#0a0a0f] shadow-[0_0_20px_rgba(0,212,200,0.35)] group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(0,212,200,0.5)] transition-all duration-300">
-              F
+            <div className="relative w-11 h-11 rounded-2xl p-0.5 bg-gradient-to-tr from-[#00d4c8] via-[#00f2fe] to-[#4facfe] shadow-[0_0_20px_rgba(0,212,200,0.4)] group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(0,212,200,0.65)] transition-all duration-300 overflow-hidden flex items-center justify-center">
+              <img
+                src={fenkLogo}
+                alt="Fenk Logo"
+                className="w-full h-full object-cover rounded-[14px]"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#00d4c8] via-white to-slate-200 bg-clip-text text-transparent">
@@ -121,6 +128,18 @@ export const Navbar: React.FC = () => {
             >
               <Wrench className="w-4 h-4" />
               سوق الحرفيين
+            </button>
+
+            <button
+              onClick={() => navigateTo('vip')}
+              className={`px-3.5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+                page === 'vip'
+                  ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+                  : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+              }`}
+            >
+              <Crown className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span>اشتراك VIP 👑</span>
             </button>
 
             <button
@@ -277,8 +296,13 @@ export const Navbar: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-[#0a0a0f]/95 backdrop-blur-2xl md:hidden pt-24 px-6 flex flex-col gap-3">
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#00d4c8] flex items-center justify-center text-[#0a0a0f] font-black text-xl">
-                F
+              <div className="relative w-10 h-10 rounded-xl p-0.5 bg-gradient-to-tr from-[#00d4c8] to-[#00b8ad] shadow-[0_0_15px_rgba(0,212,200,0.4)] overflow-hidden flex items-center justify-center">
+                <img
+                  src={fenkLogo}
+                  alt="Fenk Logo"
+                  className="w-full h-full object-cover rounded-lg"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <span className="font-bold text-xl text-white">منصة فينك</span>
             </div>
@@ -344,6 +368,22 @@ export const Navbar: React.FC = () => {
             >
               <Wrench className="w-5 h-5 text-[#00d4c8]" />
               سوق الحرفيين والمهن
+            </button>
+
+            <button
+              onClick={() => {
+                navigateTo('vip');
+                setMobileMenuOpen(false);
+              }}
+              className="p-3.5 rounded-xl font-bold text-right flex items-center justify-between bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 text-amber-300 shadow-md"
+            >
+              <div className="flex items-center gap-3">
+                <Crown className="w-5 h-5 text-amber-400" />
+                <span>نادي المشتركين VIP 👑 (باقات مميزة)</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
+                حصري
+              </span>
             </button>
 
             <button

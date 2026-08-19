@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import fenkLogo from '../assets/images/fenk_logo_1787158316546.jpg';
 import { Store, Wrench, ShieldCheck, Heart, Mail, Phone, MapPin } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -11,11 +12,19 @@ export const Footer: React.FC = () => {
         
         {/* Brand Column */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('home')}>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#00d4c8] to-[#00b8ad] text-[#0a0a0f] flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(0,212,200,0.3)]">
-              F
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigateTo('home')}>
+            <div className="relative w-11 h-11 rounded-2xl p-0.5 bg-gradient-to-tr from-[#00d4c8] to-[#00b8ad] shadow-[0_0_20px_rgba(0,212,200,0.3)] group-hover:scale-105 transition-transform overflow-hidden flex items-center justify-center">
+              <img
+                src={fenkLogo}
+                alt="Fenk Logo"
+                className="w-full h-full object-cover rounded-[14px]"
+                referrerPolicy="no-referrer"
+              />
             </div>
-            <span className="text-2xl font-black text-white">fenk</span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black text-white">fenk</span>
+              <span className="text-[10px] -mt-1 font-semibold text-slate-400">سوق المتاجر والحرفيين</span>
+            </div>
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed">

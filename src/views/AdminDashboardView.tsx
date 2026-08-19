@@ -24,7 +24,16 @@ import {
   Copy,
   Check,
   ShieldCheck,
-  MapPin
+  MapPin,
+  Crown,
+  Sparkles,
+  Search,
+  Filter,
+  Eye,
+  Calendar,
+  CreditCard,
+  Building2,
+  UserCheck
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -41,11 +50,19 @@ export const AdminDashboardView: React.FC = () => {
     deleteStore,
     approveCraftsman,
     deleteCraftsman,
+    vipRequests,
+    approveVipRequest,
+    rejectVipRequest,
+    revokeVip,
     logout,
     showToast
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'stores' | 'craftsmen' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'stores' | 'craftsmen' | 'vip' | 'settings'>('overview');
+  const [vipFilter, setVipFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [vipSearch, setVipSearch] = useState('');
+  const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   // Platform settings state
   const [platformName, setPlatformName] = useState(platformSettings.platformName);
@@ -63,6 +80,11 @@ export const AdminDashboardView: React.FC = () => {
 
   const totalGMV = orders.reduce((sum, o) => sum + o.total, 384500);
   const totalCommissionRevenue = (totalGMV * commission) / 100;
+  const pendingVipCount = vipRequests.filter((r) => r.status === 'pending').length;
+  const approvedVipCount = vipRequests.filter((r) => r.status === 'approved').length;
+  const totalVipRevenue = vipRequests
+    .filter((r) => r.status === 'approved')
+    .reduce((sum, r) => sum + r.price, 15800);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +178,25 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('vip')}
+              className={`w-full p-3 rounded-xl text-xs font-bold flex items-center justify-between transition-all ${
+                activeTab === 'vip'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                  : 'text-slate-400 hover:text-amber-300 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Crown className="w-4 h-4 text-amber-400" />
+                <span>اشتراكات VIP</span>
+              </div>
+              {pendingVipCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 animate-pulse">
+                  {pendingVipCount} جديد
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={() => setActiveTab('settings')}
               className={`w-full p-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all ${
                 activeTab === 'settings'
@@ -192,6 +233,15 @@ export const AdminDashboardView: React.FC = () => {
             نظرة عامة
           </button>
           <button
+            onClick={() => setActiveTab('vip')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap ${
+              activeTab === 'vip' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-[#1a1a24] text-amber-400 border border-amber-500/30'
+            }`}
+          >
+            <Crown className="w-3.5 h-3.5" />
+            <span>اشتراكات VIP ({pendingVipCount})</span>
+          </button>
+          <button
             onClick={() => setActiveTab('stores')}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap ${
               activeTab === 'stores' ? 'bg-[#ff3366] text-white' : 'bg-[#1a1a24] text-slate-300'
@@ -226,7 +276,7 @@ export const AdminDashboardView: React.FC = () => {
             </div>
 
             {/* KPI Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="p-5 rounded-2xl bg-[#1a1a24] border border-[#2a2a3a] space-y-2">
                 <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
                   <span>إجمالي مبيعات المنصة (GMV)</span>
@@ -235,11 +285,27 @@ export const AdminDashboardView: React.FC = () => {
                   </div>
                 </div>
                 <span className="block text-2xl font-black text-white">
-                  {totalGMV.toLocaleString()} ر.س
+                  {totalGMV.toLocaleString()} د.ج
                 </span>
                 <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
                   +22% نمو سنوي
+                </span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#1a1a24] border border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-transparent space-y-2 shadow-[0_0_20px_rgba(245,158,11,0.08)]">
+                <div className="flex items-center justify-between text-xs text-amber-300 font-semibold">
+                  <span>اشتراكات VIP المدفوعة</span>
+                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
+                    <Crown className="w-4 h-4" />
+                  </div>
+                </div>
+                <span className="block text-2xl font-black text-amber-400">
+                  {totalVipRevenue.toLocaleString()} د.ج
+                </span>
+                <span className="text-[11px] text-amber-300 font-semibold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  {approvedVipCount} اشتراك نشط ({pendingVipCount} قيد المراجعة)
                 </span>
               </div>
 
@@ -251,7 +317,7 @@ export const AdminDashboardView: React.FC = () => {
                   </div>
                 </div>
                 <span className="block text-2xl font-black text-[#00d4c8]">
-                  {totalCommissionRevenue.toLocaleString()} ر.س
+                  {totalCommissionRevenue.toLocaleString()} د.ج
                 </span>
                 <span className="text-[11px] text-slate-400 font-semibold">
                   صافي الإيراد التشغيلي
@@ -469,6 +535,314 @@ export const AdminDashboardView: React.FC = () => {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Tab: VIP Subscriptions Management */}
+        {activeTab === 'vip' && (
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
+                  <Crown className="w-6 h-6 text-amber-400" />
+                  <span>إدارة طلبات واشتراكات VIP (صلاحية المالك)</span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  مراجعة طلبات الاشتراك المدفوعة، التحقق من إيصالات بريدي موب / CCP، واعتماد أو رفض الترقية
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>{approvedVipCount} اشتراك VIP معتمد</span>
+                </span>
+              </div>
+            </div>
+
+            {/* VIP Stat Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-5 rounded-2xl bg-[#1a1a24] border border-amber-500/30 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-amber-300 font-semibold">
+                  <span>الطلبات الجديدة قيد المراجعة</span>
+                  <Crown className="w-4 h-4 text-amber-400" />
+                </div>
+                <span className="block text-2xl font-black text-white">{pendingVipCount}</span>
+                <span className="text-[11px] text-slate-400">بانتظار موافقة أو رفض المالك</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#1a1a24] border border-emerald-500/30 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                  <span>الاشتراكات المفعلة حالياً</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                </div>
+                <span className="block text-2xl font-black text-emerald-400">{approvedVipCount}</span>
+                <span className="text-[11px] text-slate-400">متصدرة الواجهة والبحث</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[#1a1a24] border border-[#00d4c8]/30 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-[#00d4c8] font-semibold">
+                  <span>عوائد رسوم اشتراكات VIP</span>
+                  <DollarSign className="w-4 h-4 text-[#00d4c8]" />
+                </div>
+                <span className="block text-2xl font-black text-[#00d4c8]">{totalVipRevenue.toLocaleString()} د.ج</span>
+                <span className="text-[11px] text-slate-400">تحويلات بريدي موب و CCP</span>
+              </div>
+            </div>
+
+            {/* Filter & Search Toolbar */}
+            <div className="p-4 rounded-2xl bg-[#1a1a24] border border-[#2a2a3a] flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 custom-scrollbar">
+                {[
+                  { id: 'all', label: `الكل (${vipRequests.length})` },
+                  { id: 'pending', label: `قيد المراجعة (${pendingVipCount})` },
+                  { id: 'approved', label: `مقبول ومفعل (${approvedVipCount})` },
+                  { id: 'rejected', label: `مرفوض (${vipRequests.filter((r) => r.status === 'rejected').length})` }
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setVipFilter(f.id as any)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                      vipFilter === f.id
+                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        : 'bg-[#0a0a0f] text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={vipSearch}
+                  onChange={(e) => setVipSearch(e.target.value)}
+                  placeholder="بحث باسم المتجر أو الهاتف..."
+                  className="w-full pr-9 pl-3 py-1.5 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* Requests Cards / Table */}
+            {vipRequests.filter((r) => {
+              if (vipFilter !== 'all' && r.status !== vipFilter) return false;
+              if (vipSearch.trim()) {
+                const q = vipSearch.toLowerCase();
+                return (
+                  r.name.toLowerCase().includes(q) ||
+                  r.phone.includes(q) ||
+                  r.wilaya.toLowerCase().includes(q) ||
+                  (r.transactionRef && r.transactionRef.toLowerCase().includes(q))
+                );
+              }
+              return true;
+            }).length === 0 ? (
+              <div className="text-center py-12 p-6 rounded-2xl bg-[#1a1a24] border border-[#2a2a3a]">
+                <Crown className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                <h3 className="text-sm font-bold text-white">لا توجد طلبات اشتراك VIP تطابق البحث</h3>
+                <p className="text-xs text-slate-400 mt-1">ستظهر طلبات المشتركين الجدد هنا فور إرسالها</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {vipRequests
+                  .filter((r) => {
+                    if (vipFilter !== 'all' && r.status !== vipFilter) return false;
+                    if (vipSearch.trim()) {
+                      const q = vipSearch.toLowerCase();
+                      return (
+                        r.name.toLowerCase().includes(q) ||
+                        r.phone.includes(q) ||
+                        r.wilaya.toLowerCase().includes(q) ||
+                        (r.transactionRef && r.transactionRef.toLowerCase().includes(q))
+                      );
+                    }
+                    return true;
+                  })
+                  .map((req) => (
+                    <div
+                      key={req.id}
+                      className={`p-5 rounded-2xl bg-[#1a1a24] border transition-all ${
+                        req.status === 'pending'
+                          ? 'border-amber-500/50 bg-gradient-to-r from-[#1a1a24] to-amber-950/10 ring-1 ring-amber-500/20'
+                          : req.status === 'approved'
+                          ? 'border-emerald-500/30'
+                          : 'border-rose-500/20 opacity-70'
+                      }`}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        {/* Left Details */}
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-base font-black text-white">{req.name}</span>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[11px] font-semibold flex items-center gap-1">
+                              {req.entityType === 'store' ? (
+                                <>
+                                  <Building2 className="w-3 h-3 text-amber-400" />
+                                  <span>متجر</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserCheck className="w-3 h-3 text-[#00d4c8]" />
+                                  <span>حرفي</span>
+                                </>
+                              )}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[11px] font-bold border border-amber-500/30">
+                              {req.planName} ({req.price.toLocaleString()} د.ج)
+                            </span>
+
+                            {/* Status Pill */}
+                            {req.status === 'pending' && (
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 animate-pulse">
+                                قيد مراجعة المالك
+                              </span>
+                            )}
+                            {req.status === 'approved' && (
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                ✓ معتمد ونشط VIP
+                              </span>
+                            )}
+                            {req.status === 'rejected' && (
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                ✕ طلب مرفوض
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Contact & Location Info */}
+                          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300">
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="font-mono dir-ltr">{req.phone}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{req.wilaya}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{req.createdAt}</span>
+                            </span>
+                          </div>
+
+                          {/* Payment Reference Details */}
+                          <div className="p-3 rounded-xl bg-[#0a0a0f] border border-white/5 text-xs text-slate-300 flex flex-wrap items-center gap-4">
+                            <span className="flex items-center gap-1 text-slate-400">
+                              <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                              <span>طريقة الدفع:</span>
+                              <strong className="text-white uppercase mr-1">{req.paymentMethod}</strong>
+                            </span>
+                            {req.transactionRef && (
+                              <span className="flex items-center gap-1">
+                                <span className="text-slate-400">رقم الحوالة/المرجع:</span>
+                                <strong className="font-mono text-amber-300 mr-1">{req.transactionRef}</strong>
+                              </span>
+                            )}
+                            {req.receiptNote && (
+                              <span className="flex items-center gap-1">
+                                <span className="text-slate-400">ملاحظة الدفع:</span>
+                                <span className="text-slate-200 mr-1">{req.receiptNote}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Rejection Reason if any */}
+                          {req.rejectionReason && (
+                            <p className="text-xs text-rose-300 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
+                              سبب الرفض: {req.rejectionReason}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Right Action Buttons */}
+                        <div className="flex flex-wrap lg:flex-col items-center lg:items-end gap-2 shrink-0">
+                          {req.status === 'pending' && (
+                            <>
+                              <button
+                                id={`approve-vip-btn-${req.id}`}
+                                onClick={() => approveVipRequest(req.id)}
+                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition"
+                              >
+                                <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                                <span>قبول وتفعيل VIP فوراً</span>
+                              </button>
+
+                              <button
+                                id={`reject-vip-btn-${req.id}`}
+                                onClick={() => {
+                                  setRejectingRequestId(req.id);
+                                  setRejectReason('');
+                                }}
+                                className="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-bold text-xs border border-rose-500/30 flex items-center gap-1.5 transition"
+                              >
+                                <XCircle className="w-4 h-4" />
+                                <span>رفض الطلب</span>
+                              </button>
+                            </>
+                          )}
+
+                          {req.status === 'approved' && (
+                            <button
+                              id={`revoke-vip-btn-${req.id}`}
+                              onClick={() => {
+                                if (req.entityId) {
+                                  revokeVip(req.entityType, req.entityId);
+                                }
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 text-xs font-semibold border border-slate-700 transition"
+                            >
+                              إلغاء وسحب شارة VIP
+                            </button>
+                          )}
+
+                          <a
+                            href={`tel:${req.phone}`}
+                            className="px-3 py-1.5 rounded-xl bg-[#0a0a0f] hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1 transition"
+                          >
+                            <Phone className="w-3 h-3 text-[#00d4c8]" />
+                            <span>اتصال بالمسؤول</span>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Inline Reject Reason Drawer */}
+                      {rejectingRequestId === req.id && (
+                        <div className="mt-4 pt-3 border-t border-slate-800 space-y-2">
+                          <label className="block text-xs font-bold text-rose-300">
+                            حدد سبب رفض طلب الاشتراك (سيظهر لصاحب الطلب):
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              placeholder="مثال: رقم الحوالة غير مطابق أو لم يتم استلام المبلغ"
+                              className="flex-1 px-3 py-2 rounded-xl bg-[#0a0a0f] border border-rose-500/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-400"
+                            />
+                            <button
+                              onClick={() => {
+                                rejectVipRequest(req.id, rejectReason || 'لم يتم تأكيد الحوالة المالية');
+                                setRejectingRequestId(null);
+                              }}
+                              className="px-4 py-2 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 transition"
+                            >
+                              تأكيد الرفض
+                            </button>
+                            <button
+                              onClick={() => setRejectingRequestId(null)}
+                              className="px-3 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white text-xs"
+                            >
+                              إلغاء
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         )}
 

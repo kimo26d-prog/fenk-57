@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import fenkLogo from '../assets/images/fenk_logo_1787158316546.jpg';
 import { AlgeriaMap } from '../components/AlgeriaMap';
 import {
   Store as StoreIcon,
@@ -16,7 +17,8 @@ import {
   MessageSquare,
   CheckCircle2,
   TrendingUp,
-  Award
+  Award,
+  Crown
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
@@ -28,12 +30,38 @@ export const HomeView: React.FC = () => {
     addToCart,
     toggleFavorite,
     favorites,
-    openChatWithCraftsman
+    openChatWithCraftsman,
+    setIsVipModalOpen
   } = useApp();
 
-  const featuredStores = stores.filter((s) => s.status === 'active').slice(0, 3);
-  const featuredProducts = products.slice(0, 4);
-  const featuredCraftsmen = craftsmen.filter((c) => c.status === 'active').slice(0, 3);
+  const vipStoresList = stores.filter((s) => s.isVip && s.status === 'active');
+  const vipCraftsmenList = craftsmen.filter((c) => c.isVip && c.status === 'active');
+
+  const featuredStores = [...stores]
+    .filter((s) => s.status === 'active')
+    .sort((a, b) => {
+      if (a.isVip && !b.isVip) return -1;
+      if (!a.isVip && b.isVip) return 1;
+      return (b.vipPriority || 0) - (a.vipPriority || 0);
+    })
+    .slice(0, 3);
+
+  const featuredProducts = [...products]
+    .sort((a, b) => {
+      if (a.isVip && !b.isVip) return -1;
+      if (!a.isVip && b.isVip) return 1;
+      return 0;
+    })
+    .slice(0, 4);
+
+  const featuredCraftsmen = [...craftsmen]
+    .filter((c) => c.status === 'active')
+    .sort((a, b) => {
+      if (a.isVip && !b.isVip) return -1;
+      if (!a.isVip && b.isVip) return 1;
+      return (b.vipPriority || 0) - (a.vipPriority || 0);
+    })
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen pt-16">
@@ -90,9 +118,21 @@ export const HomeView: React.FC = () => {
         {/* Hero Content */}
         <div className="max-w-4xl mx-auto text-center z-20 space-y-6">
           
+          {/* Official Animated Brand Badge */}
+          <div className="flex items-center justify-center gap-3">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl p-1 bg-gradient-to-tr from-[#00d4c8] via-[#00f2fe] to-[#4facfe] shadow-[0_0_40px_rgba(0,212,200,0.45)] hover:scale-110 transition-transform duration-300 overflow-hidden">
+              <img
+                src={fenkLogo}
+                alt="Fenk Platform Logo"
+                className="w-full h-full object-cover rounded-[20px]"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00d4c8]/10 border border-[#00d4c8]/30 text-[#00d4c8] text-xs font-bold shadow-[0_0_20px_rgba(0,212,200,0.15)] animate-pulse-subtle">
             <Sparkles className="w-4 h-4" />
-            <span>سوق المتاجر والخدمات والحرفيين الأول في المملكة</span>
+            <span>سوق المتاجر والخدمات والحرفيين الأول في الجزائر</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-tight sm:leading-none tracking-tight">
@@ -154,6 +194,128 @@ export const HomeView: React.FC = () => {
       {/* Interactive Algeria Map Section */}
       <AlgeriaMap />
 
+      {/* VIP Elite Spotlight Section (المشتركون بالاشتراك المدفوع VIP) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-14">
+        <div className="relative rounded-3xl overflow-hidden p-8 sm:p-10 bg-gradient-to-br from-amber-950/40 via-[#16130b] to-[#0d0d14] border-2 border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.15)]">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Header */}
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-2 shadow-sm">
+                <Crown className="w-4 h-4 text-amber-400 animate-bounce" />
+                <span>نخبة مشتركي ومتاجر VIP في الصدارة 👑</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white">
+                المشتركون <span className="bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 bg-clip-text text-transparent">VIP المميزون</span> بالصفحة الأولى
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                متاجر وحرفيون معتمدون يحصلون على أولوية الظهور في نتائج البحث والصفحة الرئيسية مع شارات ذهبية وضمان الجودة.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsVipModalOpen(true)}
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm shadow-[0_0_25px_rgba(245,158,11,0.35)] hover:scale-105 transition-all flex items-center gap-2"
+              >
+                <Crown className="w-4 h-4 fill-slate-950" />
+                <span>طلب ترقية VIP الآن</span>
+              </button>
+
+              <button
+                onClick={() => navigateTo('vip')}
+                className="px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-amber-300 font-bold text-xs sm:text-sm border border-amber-500/30 transition-all flex items-center gap-1.5"
+              >
+                <span>مزايا الباقات</span>
+                <ArrowLeft className="w-4 h-4 rotate-180" />
+              </button>
+            </div>
+          </div>
+
+          {/* VIP Cards Grid */}
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* VIP Stores */}
+            {vipStoresList.slice(0, 2).map((store) => (
+              <div
+                key={`vip-store-${store.id}`}
+                onClick={() => navigateTo('store-detail', { storeId: store.id })}
+                className="group bg-[#1a1a24]/90 border border-amber-500/30 hover:border-amber-400 rounded-2xl p-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[10px] flex items-center gap-1">
+                      <Crown className="w-3 h-3 fill-slate-950" /> متجر VIP
+                    </span>
+                    <span className="text-amber-400 font-bold text-xs flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" /> {store.rating}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-xl bg-[#0a0a0f] border border-amber-500/30 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      {store.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-sm text-white group-hover:text-amber-400 transition-colors">
+                        {store.name}
+                      </h4>
+                      <span className="text-[11px] text-slate-400 block">{store.wilayaName || store.category}</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-300 line-clamp-2">{store.desc}</p>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-amber-300 font-semibold">
+                  <span>{store.products} منتج متاح</span>
+                  <span className="text-slate-400">أولوية قصوى ★</span>
+                </div>
+              </div>
+            ))}
+
+            {/* VIP Craftsmen */}
+            {vipCraftsmenList.slice(0, 2).map((c) => (
+              <div
+                key={`vip-craft-${c.id}`}
+                onClick={() => navigateTo('craftsman-profile', { craftsmanId: c.id })}
+                className="group bg-[#1a1a24]/90 border border-amber-500/30 hover:border-amber-400 rounded-2xl p-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[10px] flex items-center gap-1">
+                      <Crown className="w-3 h-3 fill-slate-950" /> حرفي VIP
+                    </span>
+                    <span className="text-amber-400 font-bold text-xs flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" /> {c.rating}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-700 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      {c.avatar}
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-sm text-white group-hover:text-amber-400 transition-colors">
+                        {c.name}
+                      </h4>
+                      <span className="text-[11px] text-purple-400 font-semibold block">{c.profession}</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-300 line-clamp-2">{c.bio}</p>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-purple-300 font-semibold">
+                  <span>{c.jobs} عملية منجزة</span>
+                  <span className="text-amber-400">حجز فوري ⚡</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Stores Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
@@ -181,13 +343,20 @@ export const HomeView: React.FC = () => {
             <div
               key={store.id}
               onClick={() => navigateTo('store-detail', { storeId: store.id })}
-              className="group bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/60 rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(0,212,200,0.15)]"
+              className={`group bg-[#1a1a24] border ${store.isVip ? 'border-amber-500/50 shadow-[0_0_25px_rgba(245,158,11,0.12)]' : 'border-[#2a2a3a]'} hover:border-[#00d4c8]/60 rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(0,212,200,0.15)]`}
             >
               {/* Store Banner */}
               <div className={`h-36 bg-gradient-to-r ${store.bannerColor || 'from-cyan-900/60 to-slate-900'} relative p-4 flex items-start justify-between`}>
-                <span className="px-3 py-1 rounded-full bg-[#0a0a0f]/80 backdrop-blur-md text-[#00d4c8] text-xs font-black border border-[#00d4c8]/30">
-                  {store.category}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-[#0a0a0f]/80 backdrop-blur-md text-[#00d4c8] text-xs font-black border border-[#00d4c8]/30">
+                    {store.category}
+                  </span>
+                  {store.isVip && (
+                    <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-md">
+                      <Crown className="w-3.5 h-3.5 fill-slate-950" /> VIP
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
                   <Star className="w-3.5 h-3.5 fill-amber-400" />
@@ -202,9 +371,16 @@ export const HomeView: React.FC = () => {
 
               {/* Store Info */}
               <div className="p-6 pt-12 space-y-3">
-                <h3 className="text-lg font-black text-white group-hover:text-[#00d4c8] transition-colors">
-                  {store.name}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black text-white group-hover:text-[#00d4c8] transition-colors">
+                    {store.name}
+                  </h3>
+                  {store.isVip && (
+                    <span className="text-[10px] text-amber-400 font-extrabold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+                      أولوية الصدارة
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                   {store.desc}
                 </p>
@@ -344,18 +520,28 @@ export const HomeView: React.FC = () => {
             <div
               key={c.id}
               onClick={() => navigateTo('craftsman-profile', { craftsmanId: c.id })}
-              className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-purple-500/60 rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(168,85,247,0.15)] flex flex-col justify-between"
+              className={`bg-[#1a1a24] border ${c.isVip ? 'border-amber-500/50 shadow-[0_0_25px_rgba(245,158,11,0.12)]' : 'border-[#2a2a3a]'} hover:border-purple-500/60 rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(168,85,247,0.15)] flex flex-col justify-between`}
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20">
                     {c.avatar}
+                    {c.isVip && (
+                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md">
+                        <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                      </span>
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-extrabold text-base text-white">{c.name}</h4>
                       {c.verified && (
                         <CheckCircle2 className="w-4 h-4 text-[#00d4c8]" />
+                      )}
+                      {c.isVip && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black">
+                          VIP
+                        </span>
                       )}
                     </div>
                     <span className="text-xs font-bold text-purple-400 block">{c.profession}</span>

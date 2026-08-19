@@ -78,16 +78,16 @@ export const ALGERIAN_WILAYAS: Wilaya[] = [
   { code: '57', number: 57, nameAr: 'المغير', nameEn: 'El M\'Ghair', ar: 'المغير', name: 'El M\'Ghair', region: 'الجنوب' },
   { code: '58', number: 58, nameAr: 'المنيعة', nameEn: 'El Meniaa', ar: 'المنيعة', name: 'El Meniaa', region: 'الجنوب' },
   { code: '59', number: 59, nameAr: 'آفلو', nameEn: 'Aflou', ar: 'آفلو', name: 'Aflou', region: 'الهضاب العليا' },
-  { code: '60', number: 60, nameAr: 'بريكة', nameEn: 'Barika', ar: 'بريكة', name: 'Barika', region: 'الشرق' },
-  { code: '61', number: 61, nameAr: 'قصر الشلالة', nameEn: 'Ksar Chellala', ar: 'قصر الشلالة', name: 'Ksar Chellala', region: 'الهضاب العليا' },
-  { code: '62', number: 62, nameAr: 'عين وسارة', nameEn: 'Aïn Oussara', ar: 'عين وسارة', name: 'Aïn Oussara', region: 'الهضاب العليا' },
-  { code: '63', number: 63, nameAr: 'مسعد', nameEn: 'Messaad', ar: 'مسعد', name: 'Messaad', region: 'الهضاب العليا' },
+  { code: '60', number: 60, nameAr: 'الأبيض سيدي الشيخ', nameEn: 'El Abiodh Sidi Cheikh', ar: 'الأبيض سيدي الشيخ', name: 'El Abiodh Sidi Cheikh', region: 'الجنوب' },
+  { code: '61', number: 61, nameAr: 'العريشة', nameEn: 'El Aricha', ar: 'العريشة', name: 'El Aricha', region: 'الغرب' },
+  { code: '62', number: 62, nameAr: 'القنطرة', nameEn: 'El Kantara', ar: 'القنطرة', name: 'El Kantara', region: 'الشرق' },
+  { code: '63', number: 63, nameAr: 'بريكة', nameEn: 'Barika', ar: 'بريكة', name: 'Barika', region: 'الشرق' },
   { code: '64', number: 64, nameAr: 'بوسعادة', nameEn: 'Bou Saâda', ar: 'بوسعادة', name: 'Bou Saâda', region: 'الهضاب العليا' },
-  { code: '65', number: 65, nameAr: 'العلمة', nameEn: 'El Eulma', ar: 'العلمة', name: 'El Eulma', region: 'الشرق' },
-  { code: '66', number: 66, nameAr: 'شلغوم العيد', nameEn: 'Chelghoum Laïd', ar: 'شلغوم العيد', name: 'Chelghoum Laïd', region: 'الشرق' },
-  { code: '67', number: 67, nameAr: 'فرندة', nameEn: 'Frenda', ar: 'فرندة', name: 'Frenda', region: 'الهضاب العليا' },
-  { code: '68', number: 68, nameAr: 'الأبيض سيدي الشيخ', nameEn: 'El Abiodh Sidi Cheikh', ar: 'الأبيض سيدي الشيخ', name: 'El Abiodh Sidi Cheikh', region: 'الجنوب' },
-  { code: '69', number: 69, nameAr: 'دلس', nameEn: 'Dellys', ar: 'دلس', name: 'Dellys', region: 'الوسط' }
+  { code: '65', number: 65, nameAr: 'بئر العاتر', nameEn: 'Bir El Ater', ar: 'بئر العاتر', name: 'Bir El Ater', region: 'الشرق' },
+  { code: '66', number: 66, nameAr: 'قصر البخاري', nameEn: 'Ksar El Boukhari', ar: 'قصر البخاري', name: 'Ksar El Boukhari', region: 'الوسط' },
+  { code: '67', number: 67, nameAr: 'قصر الشلالة', nameEn: 'Ksar Chellala', ar: 'قصر الشلالة', name: 'Ksar Chellala', region: 'الهضاب العليا' },
+  { code: '68', number: 68, nameAr: 'عين وسارة', nameEn: 'Aïn Oussara', ar: 'عين وسارة', name: 'Aïn Oussara', region: 'الهضاب العليا' },
+  { code: '69', number: 69, nameAr: 'مسعد', nameEn: 'M\'saâd', ar: 'مسعد', name: 'M\'saâd', region: 'الهضاب العليا' }
 ];
 
 export const WILAYA_NAMES_LIST = ALGERIAN_WILAYAS.map(

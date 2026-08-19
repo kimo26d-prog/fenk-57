@@ -14,6 +14,11 @@ export interface Store {
   bannerColor?: string;
   featured?: boolean;
   wilaya?: string;
+  isVip?: boolean;
+  vipBadge?: string;
+  vipPlanId?: string;
+  vipExpiresAt?: string;
+  vipPriority?: number;
 }
 
 export interface Product {
@@ -29,6 +34,7 @@ export interface Product {
   category?: string;
   desc?: string;
   rating?: number;
+  isVip?: boolean;
 }
 
 export interface Category {
@@ -65,6 +71,11 @@ export interface Craftsman {
   verified?: boolean;
   status?: 'active' | 'pending';
   whatsapp?: string;
+  isVip?: boolean;
+  vipBadge?: string;
+  vipPlanId?: string;
+  vipExpiresAt?: string;
+  vipPriority?: number;
 }
 
 export interface CartItem extends Product {
@@ -91,6 +102,7 @@ export interface Order {
 export interface PushNotificationConfig {
   enabled: boolean;
   selectedWilaya: string;
+  subscribedWilayas?: string[];
   orderUpdates: boolean;
   wilayaOffers: boolean;
   newCraftsmenAlerts: boolean;
@@ -161,6 +173,40 @@ export interface PlatformSettings {
   currency?: string;
 }
 
+export interface VipPlan {
+  id: string;
+  name: string;
+  price: number;
+  period: string;
+  badge: string;
+  color: string;
+  bgGradient: string;
+  borderGlow: string;
+  features: string[];
+  popular?: boolean;
+}
+
+export interface VipSubscriptionRequest {
+  id: string;
+  entityType: 'store' | 'craftsman';
+  entityId?: number;
+  name: string;
+  phone: string;
+  email?: string;
+  wilaya: string;
+  planId: string;
+  planName: string;
+  price: number;
+  paymentMethod: 'baridimob' | 'ccp' | 'bank' | 'cash';
+  receiptNote?: string;
+  transactionRef?: string;
+  receiptImage?: string;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  reviewedAt?: string;
+}
+
 export type PageView =
   | 'home'
   | 'map'
@@ -172,4 +218,5 @@ export type PageView =
   | 'dashboard'
   | 'admin'
   | 'profile'
-  | 'orders-tracking';
+  | 'orders-tracking'
+  | 'vip';

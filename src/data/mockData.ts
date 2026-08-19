@@ -1,4 +1,133 @@
-import { Store, Product, Category, Craftsman, PlatformSettings, NotificationItem } from '../types';
+import { Store, Product, Category, Craftsman, PlatformSettings, NotificationItem, VipPlan, VipSubscriptionRequest } from '../types';
+
+export const VIP_PLANS: VipPlan[] = [
+  {
+    id: 'silver',
+    name: 'باقة VIP الفضية',
+    price: 2500,
+    period: 'شهرياً (1 شهر)',
+    badge: 'VIP فضي',
+    color: '#94a3b8',
+    bgGradient: 'from-slate-800 to-slate-900',
+    borderGlow: 'border-slate-600/50 shadow-slate-500/10',
+    features: [
+      'شارة متجر / حرفي موثق VIP',
+      'أسبقية في نتائج البحث والتصنيفات',
+      'إشعار المتابعين بالمنتجات الجديدة',
+      'دعم فني عبر الواتساب والبريد'
+    ]
+  },
+  {
+    id: 'gold',
+    name: 'باقة VIP الذهبية',
+    price: 5900,
+    period: 'فصلي (3 أشهر)',
+    badge: 'VIP ذهبي ★',
+    color: '#f59e0b',
+    bgGradient: 'from-amber-950/40 via-slate-900 to-slate-900',
+    borderGlow: 'border-amber-500/50 shadow-amber-500/20',
+    popular: true,
+    features: [
+      'ظهور مباشر ومثبت في الصفحة الأولى للمنصة',
+      'صدارة نتائج البحث في الولاية والتصنيف',
+      'شارة ذهبية متوهجة VIP Gold للمحل / الحرفي',
+      'إرسال إشعارات فورية (Push Notification) لعملاء الولاية',
+      'لوحة تحليلات وإحصاءات متقدمة للزيارات والطلبات',
+      'أولوية معالجة الشحنات والدعم الفني 24/7'
+    ]
+  },
+  {
+    id: 'diamond',
+    name: 'باقة VIP الماسية الملكية',
+    price: 9900,
+    period: 'نصف سنوي (6 أشهر)',
+    badge: 'VIP ماسي 👑',
+    color: '#00d4c8',
+    bgGradient: 'from-teal-950/40 via-cyan-950/30 to-slate-900',
+    borderGlow: 'border-[#00d4c8]/60 shadow-[0_0_30px_rgba(0,212,200,0.25)]',
+    features: [
+      'تثبيت دائم في صدارة البنر الرئيسي للموقع',
+      'المرتبة الأولى المطلقة في كافة محركات البحث داخل المنصة',
+      'شارة VIP الماسية الملكية المشعة 👑',
+      'إشعارات ترويجية أسبوعية لجميع مستخدمي المنصة بالجزائر',
+      'ترويج تسويقي مجاني عبر قنوات المنصة الرسمية',
+      'مدير حساب مخصص وتسهيلات دفع بنكية خاصة'
+    ]
+  }
+];
+
+export const INITIAL_VIP_REQUESTS: VipSubscriptionRequest[] = [
+  {
+    id: 'VIP-REQ-101',
+    entityType: 'store',
+    entityId: 1,
+    name: 'محل الأناقة الفاخرة',
+    phone: '0777946398',
+    email: 'anaka@fenk.dz',
+    wilaya: '57 - المغير',
+    planId: 'diamond',
+    planName: 'باقة VIP الماسية الملكية',
+    price: 9900,
+    paymentMethod: 'baridimob',
+    transactionRef: 'BM-2026-984321',
+    receiptNote: 'تم تحويل المبلغ عبر تطبيق بريدي موب، الإيصال مرفق بالرقم المرجعي',
+    date: '2026-08-19 14:30',
+    status: 'approved',
+    reviewedAt: '2026-08-19 15:00'
+  },
+  {
+    id: 'VIP-REQ-102',
+    entityType: 'craftsman',
+    entityId: 1,
+    name: 'أحمد بن علي (مقاول معتمد)',
+    phone: '0777946398',
+    email: 'ahmed.benaali@fenk.dz',
+    wilaya: '57 - المغير',
+    planId: 'gold',
+    planName: 'باقة VIP الذهبية',
+    price: 5900,
+    paymentMethod: 'ccp',
+    transactionRef: 'CCP-DZ-874211',
+    receiptNote: 'تم الدفع في مكتب بريد المغير، وصل رقم 44321',
+    date: '2026-08-19 16:15',
+    status: 'approved',
+    reviewedAt: '2026-08-19 16:30'
+  },
+  {
+    id: 'VIP-REQ-103',
+    entityType: 'store',
+    entityId: 3,
+    name: 'بيت الجمال والعطور',
+    phone: '0661234567',
+    email: 'beauty@fenk.dz',
+    wilaya: '31 - وهران',
+    planId: 'gold',
+    planName: 'باقة VIP الذهبية',
+    price: 5900,
+    paymentMethod: 'baridimob',
+    transactionRef: 'BM-992140',
+    receiptNote: 'طلب اشتراك جديد لباقة VIP الذهبية لدعم مبيعات العطور في وهران',
+    date: '2026-08-19 17:45',
+    status: 'pending'
+  },
+  {
+    id: 'VIP-REQ-104',
+    entityType: 'craftsman',
+    entityId: 2,
+    name: 'ياسين بلقاسم (كهربائي)',
+    phone: '0550987654',
+    email: 'yassine.elec@fenk.dz',
+    wilaya: '16 - الجزائر العاصمة',
+    planId: 'silver',
+    planName: 'باقة VIP الفضية',
+    price: 2500,
+    paymentMethod: 'baridimob',
+    transactionRef: 'BM-112345',
+    receiptNote: 'تحويل بريدي موب لتفعيل الظهور المميز في الجزائر العاصمة',
+    date: '2026-08-19 18:20',
+    status: 'pending'
+  }
+];
 
 export const INITIAL_STORES: Store[] = [
   {
@@ -16,7 +145,11 @@ export const INITIAL_STORES: Store[] = [
     code: 'VEND1001',
     bannerColor: 'from-cyan-900/60 to-slate-900',
     featured: true,
-    wilaya: '57 - المغير'
+    wilaya: '57 - المغير',
+    isVip: true,
+    vipBadge: 'VIP ماسي 👑',
+    vipPlanId: 'diamond',
+    vipPriority: 100
   },
   {
     id: 2,
@@ -33,7 +166,11 @@ export const INITIAL_STORES: Store[] = [
     code: 'VEND1002',
     bannerColor: 'from-blue-900/60 to-slate-900',
     featured: true,
-    wilaya: '16 - الجزائر العاصمة'
+    wilaya: '16 - الجزائر العاصمة',
+    isVip: true,
+    vipBadge: 'VIP ذهبي ★',
+    vipPlanId: 'gold',
+    vipPriority: 90
   },
   {
     id: 3,
@@ -305,6 +442,10 @@ export const INITIAL_CRAFTSMEN: Craftsman[] = [
     gallery: ['🏗️', '🧱', '🏠', '🔨', '🏘️', '🏢'],
     verified: true,
     status: 'active',
+    isVip: true,
+    vipBadge: 'VIP بلاتيني 👑',
+    vipPlanId: 'diamond',
+    vipPriority: 100,
     reviewsList: [
       { name: 'كريم الدراجي', avatar: '👤', rating: 5, date: 'قبل يومين', text: 'عمل متقن جداً وأمانة عالية في شراء المواد والتنفيذ. إنجاز المشروع قبل الموعد.' },
       { name: 'فاروق مبروكي', avatar: '👤', rating: 5, date: 'قبل أسبوع', text: 'أبو أحمد قمة في الأخلاق والاحتراف، بنى لي منزلاً عائلياً كاملاً بجودة ممتازة.' },

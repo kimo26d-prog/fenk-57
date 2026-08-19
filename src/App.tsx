@@ -10,6 +10,7 @@ import { OrderSuccessModal } from './components/OrderSuccessModal';
 import { AddStoreModal, AddProductModal, CraftsmanRegisterModal } from './components/Modals';
 import { ToastContainer } from './components/Toast';
 import { PushNotificationToast } from './components/PushNotificationToast';
+import { VipSubscriptionModal } from './components/VipSubscriptionModal';
 
 import { HomeView } from './views/HomeView';
 import { StoresView } from './views/StoresView';
@@ -20,6 +21,7 @@ import { CraftsmanProfileView } from './views/CraftsmanProfileView';
 import { VendorDashboardView } from './views/VendorDashboardView';
 import { AdminDashboardView } from './views/AdminDashboardView';
 import { CustomerProfileView } from './views/CustomerProfileView';
+import { VipView } from './views/VipView';
 import { AlgeriaMap } from './components/AlgeriaMap';
 
 const MainLayout: React.FC = () => {
@@ -52,6 +54,8 @@ const MainLayout: React.FC = () => {
         return <VendorDashboardView />;
       case 'admin':
         return <AdminDashboardView />;
+      case 'vip':
+        return <VipView />;
       default:
         return <HomeView />;
     }
@@ -82,6 +86,7 @@ const MainLayout: React.FC = () => {
       <AddStoreModal />
       <AddProductModal />
       <CraftsmanRegisterModal />
+      <VipSubscriptionModal />
       <ToastContainer />
     </div>
   );

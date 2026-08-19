@@ -12,8 +12,11 @@ import {
   CurrentUser,
   PlatformSettings,
   PageView,
-  ChatMessage
+  ChatMessage,
+  VipPlan,
+  VipSubscriptionRequest
 } from '../types';
+import { ALGERIAN_WILAYAS, Wilaya } from '../data/algerianWilayas';
 import {
   INITIAL_STORES,
   INITIAL_PRODUCTS,
@@ -21,7 +24,9 @@ import {
   INITIAL_CRAFTSMEN,
   INITIAL_NOTIFICATIONS,
   DEFAULT_PLATFORM_SETTINGS,
-  ADMIN_CREDENTIALS
+  ADMIN_CREDENTIALS,
+  VIP_PLANS,
+  INITIAL_VIP_REQUESTS
 } from '../data/mockData';
 import { playOrderNotificationSound, playSuccessSound, playClickSound } from '../utils/audio';
 
@@ -147,6 +152,23 @@ interface AppContextType {
   openChatWithCraftsman: (craftsman: Craftsman) => void;
   closeChat: () => void;
   sendChatMessage: (craftsmanId: number, text: string) => void;
+
+  // VIP Program & Subscriptions
+  vipPlans: VipPlan[];
+  vipRequests: VipSubscriptionRequest[];
+  isVipModalOpen: boolean;
+  setIsVipModalOpen: (val: boolean) => void;
+  submitVipSubscription: (requestData: Omit<VipSubscriptionRequest, 'id' | 'date' | 'status'>) => boolean;
+  approveVipRequest: (requestId: string) => void;
+  rejectVipRequest: (requestId: string, reason?: string) => void;
+  revokeVip: (entityType: 'store' | 'craftsman', entityId: number) => void;
+
+  // Wilaya & Category State
+  selectedWilaya: Wilaya;
+  setSelectedWilaya: (w: Wilaya) => void;
+  activeCategory: string;
+  setActiveCategory: (cat: string) => void;
+  togglePushSubscription: (wilayaCode: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -309,6 +331,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isOrderSuccessModalOpen, setIsOrderSuccessModalOpen] = useState(false);
   const [latestPlacedOrder, setLatestPlacedOrder] = useState<Order | null>(null);
 
+  // VIP Subscriptions State
+  const [vipRequests, setVipRequests] = useState<VipSubscriptionRequest[]>(() => {
+    const saved = localStorage.getItem('fenk_vip_requests');
+    return saved ? JSON.parse(saved) : INITIAL_VIP_REQUESTS;
+  });
+  const [isVipModalOpen, setIsVipModalOpen] = useState(false);
+
   // Live Chat state
   const [activeChatCraftsman, setActiveChatCraftsman] = useState<Craftsman | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<number, ChatMessage[]>>({
@@ -325,6 +354,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Toast state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Wilaya & Category state
+  const [selectedWilaya, setSelectedWilaya] = useState<Wilaya>(() => {
+    return ALGERIAN_WILAYAS.find((w) => w.code === '16') || ALGERIAN_WILAYAS[0];
+  });
+  const [activeCategory, setActiveCategory] = useState<string>('الكل');
 
   // Sync to local storage
   useEffect(() => {
@@ -366,6 +401,138 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('fenk_sound', JSON.stringify(soundEnabled));
   }, [soundEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('fenk_vip_requests', JSON.stringify(vipRequests));
+  }, [vipRequests]);
+
+  // VIP Program Actions
+  const submitVipSubscription = (requestData: Omit<VipSubscriptionRequest, 'id' | 'date' | 'status'>): boolean => {
+    const newReqId = `VIP-REQ-${Date.now().toString().slice(-4)}`;
+    const newRequest: VipSubscriptionRequest = {
+      ...requestData,
+      id: newReqId,
+      date: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      status: 'pending'
+    };
+
+    setVipRequests((prev) => [newRequest, ...prev]);
+    setIsVipModalOpen(false);
+    showToast(
+      'success',
+      'تم إرسال طلب اشتراك VIP بنجاح',
+      `تم استلام طلبك لـ (${newRequest.planName}). سيقوم مالك المنصة بمراجعته وتفعيله.`
+    );
+    addNotification(
+      'alert',
+      'طلب اشتراك VIP جديد 👑',
+      `طلب اشتراك جديد من ${newRequest.name} (${newRequest.planName} - ${newRequest.price} د.ج)`,
+      { requestId: newRequest.id }
+    );
+    playSuccessSound(soundEnabled);
+    return true;
+  };
+
+  const approveVipRequest = (requestId: string) => {
+    const req = vipRequests.find((r) => r.id === requestId);
+    if (!req) return;
+
+    const plan = VIP_PLANS.find((p) => p.id === req.planId) || VIP_PLANS[1];
+
+    setVipRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? { ...r, status: 'approved', reviewedAt: new Date().toISOString().replace('T', ' ').slice(0, 16) }
+          : r
+      )
+    );
+
+    if (req.entityType === 'store') {
+      setStores((prev) =>
+        prev.map((s) => {
+          if (s.id === req.entityId || s.name.trim().toLowerCase() === req.name.trim().toLowerCase() || (s.phone && s.phone === req.phone)) {
+            return {
+              ...s,
+              isVip: true,
+              vipBadge: plan.badge,
+              vipPlanId: plan.id,
+              vipPriority: plan.id === 'diamond' ? 100 : plan.id === 'gold' ? 80 : 60
+            };
+          }
+          return s;
+        })
+      );
+      if (req.entityId) {
+        setProducts((prev) =>
+          prev.map((p) => (p.storeId === req.entityId ? { ...p, isVip: true } : p))
+        );
+      }
+    } else {
+      setCraftsmen((prev) =>
+        prev.map((c) => {
+          if (c.id === req.entityId || c.name.trim().toLowerCase() === req.name.trim().toLowerCase() || (c.phone && c.phone === req.phone)) {
+            return {
+              ...c,
+              isVip: true,
+              vipBadge: plan.badge,
+              vipPlanId: plan.id,
+              vipPriority: plan.id === 'diamond' ? 100 : plan.id === 'gold' ? 80 : 60
+            };
+          }
+          return c;
+        })
+      );
+    }
+
+    showToast(
+      'success',
+      'تم تفعيل اشتراك VIP رسمياً 👑',
+      `تم منح باقة ${plan.name} لـ "${req.name}" مع صدارة الصفحة الأولى ونتائج البحث!`
+    );
+    addNotification(
+      'success',
+      'مبروك! تفعيل اشتراك VIP 👑',
+      `تم قبول طلب وتفعيل باقة ${plan.name} لـ ${req.name} بنجاح.`,
+      { entityId: req.entityId, entityType: req.entityType }
+    );
+    playSuccessSound(soundEnabled);
+  };
+
+  const rejectVipRequest = (requestId: string, reason?: string) => {
+    const req = vipRequests.find((r) => r.id === requestId);
+    if (!req) return;
+
+    setVipRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              status: 'rejected',
+              rejectionReason: reason || 'بيانات التحويل أو الدفع غير متطابقة، يرجى إعادة إرسال الوصل الصحيح',
+              reviewedAt: new Date().toISOString().replace('T', ' ').slice(0, 16)
+            }
+          : r
+      )
+    );
+
+    showToast('info', 'تم رفض طلب VIP', `تم رفض طلب اشتراك ${req.name}`);
+  };
+
+  const revokeVip = (entityType: 'store' | 'craftsman', entityId: number) => {
+    if (entityType === 'store') {
+      setStores((prev) =>
+        prev.map((s) => (s.id === entityId ? { ...s, isVip: false, vipBadge: undefined, vipPlanId: undefined, vipPriority: 0 } : s))
+      );
+      setProducts((prev) =>
+        prev.map((p) => (p.storeId === entityId ? { ...p, isVip: false } : p))
+      );
+    } else {
+      setCraftsmen((prev) =>
+        prev.map((c) => (c.id === entityId ? { ...c, isVip: false, vipBadge: undefined, vipPlanId: undefined, vipPriority: 0 } : c))
+      );
+    }
+    showToast('warning', 'تم إلغاء عضوية VIP', 'تم سحب شارة وصدارة VIP بنجاح');
+  };
 
   // Toast function
   const showToast = (type: ToastMessage['type'], title: string, message: string) => {
@@ -415,6 +582,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const updated = { ...prev, ...newCfg };
       showToast('success', 'تم حفظ تفضيلات الإشعارات', `الولاية المحددة: ${updated.selectedWilaya}`);
       return updated;
+    });
+  };
+
+  const togglePushSubscription = (wilayaCode: string) => {
+    setPushConfig((prev) => {
+      const currentSubs = prev.subscribedWilayas || [];
+      const exists = currentSubs.includes(wilayaCode);
+      const updatedSubs = exists
+        ? currentSubs.filter((c: string) => c !== wilayaCode)
+        : [...currentSubs, wilayaCode];
+
+      const wilayaObj = ALGERIAN_WILAYAS.find((w) => w.code === wilayaCode);
+      const wName = wilayaObj ? `${wilayaObj.code} - ${wilayaObj.nameAr}` : wilayaCode;
+
+      const next: PushNotificationConfig = {
+        ...prev,
+        subscribedWilayas: updatedSubs,
+        selectedWilaya: wName
+      };
+
+      showToast(
+        'success',
+        exists ? 'تم إلغاء التنبيه' : 'تم تفعيل التنبيه',
+        exists
+          ? `تم إلغاء متابعة إشعارات ولاية ${wilayaObj?.nameAr || wilayaCode}`
+          : `ستصلك عروض وطلبات ولاية ${wilayaObj?.nameAr || wilayaCode} أولاً بأول`
+      );
+
+      return next;
     });
   };
 
@@ -737,7 +933,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Auth operations
   const loginAsVendor = (code: string): boolean => {
-    const store = stores.find((s) => s.code.toUpperCase() === code.trim().toUpperCase());
+    const store = stores.find((s) => s && s.code && s.code.toUpperCase() === code.trim().toUpperCase());
     if (store) {
       const user: CurrentUser = {
         type: 'vendor',
@@ -1212,7 +1408,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         chatMessages,
         openChatWithCraftsman,
         closeChat,
-        sendChatMessage
+        sendChatMessage,
+        selectedWilaya,
+        setSelectedWilaya,
+        activeCategory,
+        setActiveCategory,
+        togglePushSubscription,
+        vipPlans: VIP_PLANS,
+        vipRequests,
+        isVipModalOpen,
+        setIsVipModalOpen,
+        submitVipSubscription,
+        approveVipRequest,
+        rejectVipRequest,
+        revokeVip
       }}
     >
       {children}

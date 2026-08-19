@@ -13,7 +13,8 @@ import {
   PlusCircle,
   CheckCircle2,
   Filter,
-  ShieldCheck
+  ShieldCheck,
+  Crown
 } from 'lucide-react';
 import { ALGERIAN_WILAYAS } from '../data/algerianWilayas';
 
@@ -23,6 +24,7 @@ export const CraftsmenView: React.FC = () => {
     navigateTo,
     openChatWithCraftsman,
     setIsCraftsmanRegisterModalOpen,
+    setIsVipModalOpen,
     showToast
   } = useApp();
 
@@ -51,23 +53,30 @@ export const CraftsmenView: React.FC = () => {
     }))
   ];
 
-  const filteredCraftsmen = craftsmen.filter((c) => {
-    const matchesSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.profession.toLowerCase().includes(search.toLowerCase()) ||
-      c.bio.toLowerCase().includes(search.toLowerCase()) ||
-      c.skills.some((sk) => sk.toLowerCase().includes(search.toLowerCase()));
+  const filteredCraftsmen = craftsmen
+    .filter((c) => {
+      const matchesSearch =
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.profession.toLowerCase().includes(search.toLowerCase()) ||
+        c.bio.toLowerCase().includes(search.toLowerCase()) ||
+        c.skills.some((sk) => sk.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesProf =
-      selectedProfession === 'all' || c.profession.includes(selectedProfession);
+      const matchesProf =
+        selectedProfession === 'all' || c.profession.includes(selectedProfession);
 
-    const matchesCity =
-      selectedCity === 'all' || c.city.includes(selectedCity);
+      const matchesCity =
+        selectedCity === 'all' || c.city.includes(selectedCity);
 
-    const matchesMobility = !onlyMobile || c.mobility;
+      const matchesMobility = !onlyMobile || c.mobility;
 
-    return c.status === 'active' && matchesSearch && matchesProf && matchesCity && matchesMobility;
-  });
+      return c.status === 'active' && matchesSearch && matchesProf && matchesCity && matchesMobility;
+    })
+    .sort((a, b) => {
+      // VIP craftsmen always placed first
+      if (a.isVip && !b.isVip) return -1;
+      if (!a.isVip && b.isVip) return 1;
+      return (b.vipPriority || 0) - (a.vipPriority || 0);
+    });
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto">
@@ -152,14 +161,23 @@ export const CraftsmenView: React.FC = () => {
             </select>
           </div>
 
-          {/* Register CTA button */}
-          <div>
+          {/* Register & VIP CTA buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsVipModalOpen(true)}
+              className="px-3.5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:scale-105 transition-all shrink-0"
+              title="ترقية اشتراك حرفي VIP"
+            >
+              <Crown className="w-3.5 h-3.5 fill-slate-950" />
+              <span>VIP 👑</span>
+            </button>
+
             <button
               onClick={() => setIsCraftsmanRegisterModalOpen(true)}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:scale-105 transition-all"
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:scale-105 transition-all"
             >
               <PlusCircle className="w-4 h-4" />
-              سجل كحرفي معتمد
+              سجل كحرفي
             </button>
           </div>
         </div>
@@ -195,14 +213,19 @@ export const CraftsmenView: React.FC = () => {
             <div
               key={c.id}
               onClick={() => navigateTo('craftsman-profile', { craftsmanId: c.id })}
-              className="group bg-[#1a1a24] border border-[#2a2a3a] hover:border-purple-500/60 rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(168,85,247,0.15)] flex flex-col justify-between"
+              className={`group bg-[#1a1a24] border ${c.isVip ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.12)]' : 'border-[#2a2a3a]'} hover:border-purple-500/60 rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(168,85,247,0.15)] flex flex-col justify-between`}
             >
               <div className="space-y-4">
                 
                 {/* Header with Avatar & Details */}
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0 group-hover:scale-105 transition-transform">
                     {c.avatar}
+                    {c.isVip && (
+                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md">
+                        <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -210,6 +233,11 @@ export const CraftsmenView: React.FC = () => {
                       <h3 className="font-extrabold text-base text-white truncate">{c.name}</h3>
                       {c.verified && (
                         <CheckCircle2 className="w-4 h-4 text-[#00d4c8] shrink-0" title="حرفي موثق" />
+                      )}
+                      {c.isVip && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black">
+                          VIP
+                        </span>
                       )}
                     </div>
                     

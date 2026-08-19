@@ -33,13 +33,31 @@ export const VendorDashboardView: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings'>('overview');
 
-  const currentStore = stores.find((s) => s.id === currentUser.storeId) || stores[0];
+  const fallbackStore = {
+    id: 1,
+    name: 'متجر الفنك النموذجي',
+    code: 'STORE-101',
+    category: 'مواد البناء',
+    rating: 4.9,
+    reviewsCount: 28,
+    image: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?w=600&auto=format&fit=crop&q=80',
+    icon: '🏗️',
+    desc: 'المتجر الرسمي للأدوات ومواد البناء',
+    phone: '0555001122',
+    email: 'store@fenk.dz',
+    wilaya: '16 - الجزائر العاصمة',
+    address: 'الجزائر العاصمة',
+    featured: true,
+    status: 'approved' as const
+  };
+
+  const currentStore = stores.find((s) => s.id === currentUser.storeId) || stores[0] || fallbackStore;
   const storeProducts = products.filter((p) => p.storeId === currentStore.id);
-  const storeOrders = orders.filter((o) => o.storeIds.includes(currentStore.id));
+  const storeOrders = orders.filter((o) => o.storeIds && o.storeIds.includes(currentStore.id));
 
   // Store settings form state
-  const [storeName, setStoreName] = useState(currentStore.name);
-  const [storeDesc, setStoreDesc] = useState(currentStore.desc);
+  const [storeName, setStoreName] = useState(currentStore.name || 'متجري');
+  const [storeDesc, setStoreDesc] = useState(currentStore.desc || '');
   const [storePhone, setStorePhone] = useState(currentStore.phone || '');
   const [storeEmail, setStoreEmail] = useState(currentStore.email || '');
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import fenkLogo from '../assets/images/fenk_logo_1787158316546.jpg';
 import {
   X,
   Store as StoreIcon,
@@ -84,8 +85,13 @@ export const LoginModal: React.FC = () => {
             <X className="w-4 h-4" />
           </button>
 
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#00d4c8] to-[#00b8ad] text-[#0a0a0f] font-black text-2xl flex items-center justify-center mx-auto mb-3 shadow-[0_0_25px_rgba(0,212,200,0.4)]">
-            F
+          <div className="relative w-16 h-16 rounded-2xl p-0.5 bg-gradient-to-tr from-[#00d4c8] via-[#00f2fe] to-[#4facfe] shadow-[0_0_30px_rgba(0,212,200,0.5)] mx-auto mb-3 overflow-hidden flex items-center justify-center">
+            <img
+              src={fenkLogo}
+              alt="Fenk Logo"
+              className="w-full h-full object-cover rounded-[14px]"
+              referrerPolicy="no-referrer"
+            />
           </div>
           <h3 className="text-xl font-extrabold text-white">تسجيل الدخول إلى فينك</h3>
           <p className="text-xs text-slate-400 mt-1">اختر نوع حسابك للمتابعة</p>
