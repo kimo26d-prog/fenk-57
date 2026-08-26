@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   X,
@@ -9,7 +9,10 @@ import {
   Sparkles,
   Upload,
   CheckCircle2,
-  MapPin
+  MapPin,
+  Image as ImageIcon,
+  Camera,
+  Trash2
 } from 'lucide-react';
 import { ALGERIAN_WILAYAS } from '../data/algerianWilayas';
 
@@ -228,8 +231,34 @@ export const AddProductModal: React.FC = () => {
   const [icon, setIcon] = useState('📦');
   const [badge, setBadge] = useState('جديد');
   const [desc, setDesc] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isAddProductModalOpen) return null;
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setImageUrl(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const samplePhotoPresets = [
+    { label: 'أزياء وسترات', url: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=600&auto=format&fit=crop&q=80' },
+    { label: 'أحذية رياضية', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80' },
+    { label: 'هواتف ذكية', url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80' },
+    { label: 'سماعات احترافية', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80' },
+    { label: 'عطور فاخرة', url: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=600&auto=format&fit=crop&q=80' },
+    { label: 'ديكور ومفروشات', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&auto=format&fit=crop&q=80' },
+    { label: 'أدوات بناء ومعدات', url: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop&q=80' }
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,6 +271,7 @@ export const AddProductModal: React.FC = () => {
       stock: Number(stock),
       category,
       icon,
+      image: imageUrl || imagePreview || undefined,
       badge: badge.trim() || undefined,
       desc: desc.trim() || undefined,
       storeId: currentUser.storeId || 1
@@ -251,6 +281,8 @@ export const AddProductModal: React.FC = () => {
     setPrice('');
     setOldPrice('');
     setDesc('');
+    setImageUrl('');
+    setImagePreview(null);
   };
 
   const productEmojis = ['👕', '📱', '🧴', '👟', '🎧', '💄', '🪑', '🍚', '🫒', '🛋️', '⌚', '📦'];
@@ -262,16 +294,16 @@ export const AddProductModal: React.FC = () => {
         className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity"
       />
 
-      <div className="relative w-full max-w-lg bg-[#12121a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl z-10">
-        <div className="p-6 bg-[#1a1a24] border-b border-[#2a2a3a] flex items-center justify-between">
+      <div className="relative w-full max-w-lg bg-[#12121a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col">
+        <div className="p-6 bg-[#1a1a24] border-b border-[#2a2a3a] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00d4c8]/10 text-[#00d4c8] border border-[#00d4c8]/30 flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-white text-base">إضافة منتج جديد للمتجر</h3>
+              <h3 className="font-extrabold text-white text-base">إضافة منتج حقيقي للمتجر</h3>
               <p className="text-xs text-slate-400">
-                {currentUser.storeName || 'المتجر الحالي'}
+                {currentUser.storeName || 'المتجر الحالي'} - مع إمكانية رفع صورة حقيقية
               </p>
             </div>
           </div>
@@ -283,7 +315,100 @@ export const AddProductModal: React.FC = () => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+          {/* Real Photo Upload & Preview Section */}
+          <div className="p-4 rounded-2xl bg-[#0a0a0f] border border-[#2a2a3a] space-y-3">
+            <label className="block text-xs font-bold text-white flex items-center gap-2">
+              <Camera className="w-4 h-4 text-[#00d4c8]" />
+              صورة المنتج الحقيقية (رفع من الجهاز أو رابط)
+            </label>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-24 h-24 rounded-2xl bg-[#161622] border-2 border-dashed border-[#00d4c8]/40 flex items-center justify-center overflow-hidden shrink-0 relative group">
+                {imagePreview || imageUrl ? (
+                  <>
+                    <img
+                      src={imagePreview || imageUrl}
+                      alt="معاينة المنتج"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setImageUrl('');
+                      }}
+                      className="absolute inset-0 bg-black/70 flex items-center justify-center text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center text-slate-400 hover:text-[#00d4c8] cursor-pointer p-2 text-center"
+                  >
+                    <Upload className="w-5 h-5 mb-1" />
+                    <span className="text-[10px] font-bold">رفع صورة</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 w-full space-y-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-[#2a2a3a] text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#00d4c8]" />
+                    اختر ملفاً من جهازك
+                  </button>
+                </div>
+
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    setImagePreview(e.target.value);
+                  }}
+                  placeholder="أو الصق رابط صورة خارجية (https://...)"
+                  className="w-full px-3 py-2 rounded-xl bg-[#12121a] border border-[#2a2a3a] text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#00d4c8]"
+                />
+              </div>
+            </div>
+
+            {/* Quick preset chips */}
+            <div>
+              <span className="text-[11px] text-slate-400 block mb-1.5">أو اختر من النماذج الحقيقية الجاهزة:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {samplePhotoPresets.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setImageUrl(preset.url);
+                      setImagePreview(preset.url);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#161622] hover:bg-[#00d4c8]/20 border border-[#2a2a3a] hover:border-[#00d4c8]/50 text-[11px] text-slate-300 hover:text-[#00d4c8] transition-colors"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1.5">اسم المنتج *</label>
             <input
@@ -298,14 +423,14 @@ export const AddProductModal: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">السعر الحالي (ر.س) *</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">السعر الحالي (د.ج) *</label>
               <input
                 type="number"
                 required
                 min={1}
                 value={price}
                 onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="149"
+                placeholder="4500"
                 className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a] text-sm text-white focus:outline-none focus:border-[#00d4c8]"
               />
             </div>
@@ -317,7 +442,7 @@ export const AddProductModal: React.FC = () => {
                 min={1}
                 value={oldPrice}
                 onChange={(e) => setOldPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="199"
+                placeholder="5800"
                 className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a] text-sm text-white focus:outline-none focus:border-[#00d4c8]"
               />
             </div>
@@ -342,12 +467,13 @@ export const AddProductModal: React.FC = () => {
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#2a2a3a] text-sm text-white focus:outline-none focus:border-[#00d4c8]"
               >
-                <option value="أزياء">أزياء</option>
-                <option value="إلكترونيات">إلكترونيات</option>
+                <option value="أزياء">أزياء وموضة</option>
+                <option value="إلكترونيات">إلكترونيات وتقنية</option>
                 <option value="جمال">جمال وعطور</option>
-                <option value="بقالة">بقالة</option>
-                <option value="رياضة">رياضة</option>
-                <option value="أثاث">أثاث</option>
+                <option value="بقالة">بقالة وتموينات</option>
+                <option value="رياضة">رياضة ولياقة</option>
+                <option value="أثاث">أثاث وديكور</option>
+                <option value="مواد البناء">مواد بناء وأدوات</option>
               </select>
             </div>
 
@@ -364,7 +490,7 @@ export const AddProductModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">رمز وأيقونة المنتج</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">رمز الإيموجي الاحتياطي</label>
             <div className="flex flex-wrap gap-2">
               {productEmojis.map((e) => (
                 <button
@@ -423,8 +549,55 @@ export const CraftsmanRegisterModal: React.FC = () => {
   const [bio, setBio] = useState('');
   const [experience, setExperience] = useState<number>(8);
   const [mobility, setMobility] = useState<boolean>(true);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [newGalleryInput, setNewGalleryInput] = useState('');
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   if (!isCraftsmanRegisterModalOpen) return null;
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setPhotoPreview(result);
+        setPhotoUrl(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach((file: File) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setGalleryUrls((prev) => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const addGalleryFromUrl = () => {
+    if (newGalleryInput.trim()) {
+      setGalleryUrls((prev) => [...prev, newGalleryInput.trim()]);
+      setNewGalleryInput('');
+    }
+  };
+
+  const sampleCraftsmanAvatars = [
+    { label: 'بناء ومعماري', url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=400&auto=format&fit=crop&q=80' },
+    { label: 'كهربائي محترف', url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&auto=format&fit=crop&q=80' },
+    { label: 'نجار وديكورات', url: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&auto=format&fit=crop&q=80' },
+    { label: 'سباك وصرف صحي', url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&auto=format&fit=crop&q=80' },
+    { label: 'دهانات وفنون', url: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&auto=format&fit=crop&q=80' }
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -450,18 +623,24 @@ export const CraftsmanRegisterModal: React.FC = () => {
       name: name.trim(),
       profession: profession + ' معتمد',
       avatar: professionEmojis[profession] || '👷‍♂️',
+      photo: photoUrl || photoPreview || undefined,
+      avatarImage: photoUrl || photoPreview || undefined,
       city,
       phone: phone.trim(),
       whatsapp: cleanPhone || `213${phone.trim()}`,
       bio: bio.trim() || `خبير محترف في مجال الـ ${profession} بولاية ${city} وما جاورها بخبرة تتجاوز ${experience} سنوات.`,
       experience: Number(experience),
       mobility,
-      skills: [profession, 'صيانة عامة', 'تشطيب', 'ضمان معتمد']
+      skills: [profession, 'صيانة عامة', 'تشطيب', 'ضمان معتمد'],
+      gallery: galleryUrls.length > 0 ? galleryUrls : undefined
     });
 
     setName('');
     setPhone('');
     setBio('');
+    setPhotoUrl('');
+    setPhotoPreview(null);
+    setGalleryUrls([]);
   };
 
   return (
@@ -471,15 +650,15 @@ export const CraftsmanRegisterModal: React.FC = () => {
         className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity"
       />
 
-      <div className="relative w-full max-w-lg bg-[#12121a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl z-10">
-        <div className="p-6 bg-[#1a1a24] border-b border-[#2a2a3a] flex items-center justify-between">
+      <div className="relative w-full max-w-lg bg-[#12121a] border border-[#2a2a3a] rounded-3xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col">
+        <div className="p-6 bg-[#1a1a24] border-b border-[#2a2a3a] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center justify-center">
               <Wrench className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-white text-base">تسجيل حرفي / مقاول جزائري 🇩🇿</h3>
-              <p className="text-xs text-slate-400">انضم لسوق المهن عبر 69 ولاية جزائرية واستقبل طلبات العملاء</p>
+              <p className="text-xs text-slate-400">انضم لسوق المهن مع رفع صورتك الشخصية ومعرض أعمالك الحقيقية</p>
             </div>
           </div>
           <button
@@ -490,7 +669,167 @@ export const CraftsmanRegisterModal: React.FC = () => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+          {/* Craftsman Avatar Upload & Live Preview */}
+          <div className="p-4 rounded-2xl bg-[#0a0a0f] border border-[#2a2a3a] space-y-3">
+            <label className="block text-xs font-bold text-white flex items-center gap-2">
+              <Camera className="w-4 h-4 text-purple-400" />
+              الصورة الشخصية للحرفي (رفع صورة حقيقية)
+            </label>
+
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-[#161622] border-2 border-purple-500/40 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-md">
+                {photoPreview || photoUrl ? (
+                  <>
+                    <img
+                      src={photoPreview || photoUrl}
+                      alt="صورة الحرفي"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhotoPreview(null);
+                        setPhotoUrl('');
+                      }}
+                      className="absolute inset-0 bg-black/70 flex items-center justify-center text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <div
+                    onClick={() => photoInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center text-slate-400 hover:text-purple-400 cursor-pointer p-2 text-center"
+                  >
+                    <Upload className="w-5 h-5 mb-1" />
+                    <span className="text-[10px] font-bold">صورة شخصية</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 space-y-2">
+                <input
+                  type="file"
+                  ref={photoInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  رفع صورة من الجهاز
+                </button>
+
+                <input
+                  type="url"
+                  value={photoUrl}
+                  onChange={(e) => {
+                    setPhotoUrl(e.target.value);
+                    setPhotoPreview(e.target.value);
+                  }}
+                  placeholder="أو الصق رابط صورة (https://...)"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[#12121a] border border-[#2a2a3a] text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            {/* Quick avatar presets */}
+            <div>
+              <span className="text-[11px] text-slate-400 block mb-1.5">أو اختر صورة سريعة من النماذج:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {sampleCraftsmanAvatars.map((sample, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setPhotoUrl(sample.url);
+                      setPhotoPreview(sample.url);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#161622] hover:bg-purple-500/20 border border-[#2a2a3a] hover:border-purple-500/40 text-[11px] text-slate-300 hover:text-purple-300 transition-colors"
+                  >
+                    {sample.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Real Project Gallery Upload */}
+          <div className="p-4 rounded-2xl bg-[#0a0a0f] border border-[#2a2a3a] space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-white flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-purple-400" />
+                معرض صور الأعمال السابقة ({galleryUrls.length} صور)
+              </label>
+
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold flex items-center gap-1 border border-[#2a2a3a]"
+              >
+                <Upload className="w-3 h-3 text-purple-400" />
+                إضافة صور من الجهاز
+              </button>
+            </div>
+
+            <input
+              type="file"
+              ref={galleryInputRef}
+              onChange={handleGalleryUpload}
+              accept="image/*"
+              multiple
+              className="hidden"
+            />
+
+            {/* URL add */}
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={newGalleryInput}
+                onChange={(e) => setNewGalleryInput(e.target.value)}
+                placeholder="أضف رابط صورة عمل نفذته (https://...)"
+                className="flex-1 px-3 py-1.5 rounded-xl bg-[#12121a] border border-[#2a2a3a] text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+              />
+              <button
+                type="button"
+                onClick={addGalleryFromUrl}
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold"
+              >
+                إضافة
+              </button>
+            </div>
+
+            {/* Gallery Previews Grid */}
+            {galleryUrls.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 pt-1">
+                {galleryUrls.map((gUrl, idx) => (
+                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-[#2a2a3a] group">
+                    <img
+                      src={gUrl}
+                      alt={`عمل ${idx + 1}`}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setGalleryUrls((prev) => prev.filter((_, i) => i !== idx))}
+                      className="absolute inset-0 bg-black/60 flex items-center justify-center text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">الاسم واللقب *</label>

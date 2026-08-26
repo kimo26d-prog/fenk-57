@@ -17,6 +17,7 @@ import {
   Crown
 } from 'lucide-react';
 import { ALGERIAN_WILAYAS } from '../data/algerianWilayas';
+import { MediaImage } from '../components/MediaImage';
 
 export const CraftsmenView: React.FC = () => {
   const {
@@ -219,10 +220,15 @@ export const CraftsmenView: React.FC = () => {
                 
                 {/* Header with Avatar & Details */}
                 <div className="flex items-start gap-4">
-                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0 group-hover:scale-105 transition-transform">
-                    {c.avatar}
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 overflow-hidden flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0 group-hover:scale-105 transition-transform">
+                    <MediaImage
+                      src={c.photo || c.avatarImage}
+                      alt={c.name}
+                      fallbackIcon={c.avatar}
+                      className="w-full h-full object-cover"
+                    />
                     {c.isVip && (
-                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md">
+                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md z-10">
                         <Crown className="w-3.5 h-3.5 fill-slate-950" />
                       </span>
                     )}

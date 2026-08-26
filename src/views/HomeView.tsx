@@ -2,6 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 import fenkLogo from '../assets/images/fenk_logo_1787158316546.jpg';
 import { AlgeriaMap } from '../components/AlgeriaMap';
+import { MediaImage } from '../components/MediaImage';
 import {
   Store as StoreIcon,
   ShoppingBag,
@@ -255,8 +256,13 @@ export const HomeView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-xl bg-[#0a0a0f] border border-amber-500/30 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                      {store.icon}
+                    <div className="w-12 h-12 rounded-xl bg-[#0a0a0f] border border-amber-500/30 overflow-hidden flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shrink-0">
+                      <MediaImage
+                        src={store.image}
+                        alt={store.name}
+                        fallbackIcon={store.icon}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
                       <h4 className="font-extrabold text-sm text-white group-hover:text-amber-400 transition-colors">
@@ -293,8 +299,13 @@ export const HomeView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-700 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {c.avatar}
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-700 overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                      <MediaImage
+                        src={c.photo || c.avatarImage}
+                        alt={c.name}
+                        fallbackIcon={c.avatar}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
                       <h4 className="font-extrabold text-sm text-white group-hover:text-amber-400 transition-colors">
@@ -364,8 +375,13 @@ export const HomeView: React.FC = () => {
                 </div>
 
                 {/* Logo floating */}
-                <div className="absolute -bottom-8 right-6 w-18 h-18 rounded-2xl bg-[#0a0a0f] border-4 border-[#1a1a24] flex items-center justify-center text-4xl shadow-xl group-hover:scale-105 transition-transform">
-                  {store.icon}
+                <div className="absolute -bottom-8 right-6 w-18 h-18 rounded-2xl bg-[#0a0a0f] border-4 border-[#1a1a24] overflow-hidden flex items-center justify-center text-4xl shadow-xl group-hover:scale-105 transition-transform">
+                  <MediaImage
+                    src={store.image}
+                    alt={store.name}
+                    fallbackIcon={store.icon}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
 
@@ -426,17 +442,20 @@ export const HomeView: React.FC = () => {
             return (
               <div
                 key={prod.id}
-                className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group"
+                className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group shadow-xl"
               >
                 <div>
-                  {/* Image/Icon Box */}
-                  <div className="h-52 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center text-7xl p-4 overflow-hidden">
-                    <span className="group-hover:scale-110 transition-transform duration-300">
-                      {prod.icon}
-                    </span>
+                  {/* Image/Media Box */}
+                  <div className="h-56 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center overflow-hidden">
+                    <MediaImage
+                      src={prod.image}
+                      alt={prod.name}
+                      fallbackIcon={prod.icon}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
 
                     {prod.badge && (
-                      <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30">
+                      <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30 z-10">
                         {prod.badge}
                       </span>
                     )}
@@ -446,7 +465,7 @@ export const HomeView: React.FC = () => {
                         e.stopPropagation();
                         toggleFavorite(prod.id);
                       }}
-                      className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all ${
+                      className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all z-10 ${
                         isFav
                           ? 'bg-[#ff3366] text-white'
                           : 'bg-black/40 text-slate-300 hover:text-white'
@@ -467,11 +486,11 @@ export const HomeView: React.FC = () => {
 
                     <div className="flex items-baseline gap-2 pt-1">
                       <span className="text-lg font-black text-[#00d4c8]">
-                        {prod.price} ر.س
+                        {prod.price.toLocaleString()} د.ج
                       </span>
                       {prod.oldPrice && (
                         <span className="text-xs text-slate-500 line-through">
-                          {prod.oldPrice} ر.س
+                          {prod.oldPrice.toLocaleString()} د.ج
                         </span>
                       )}
                     </div>
@@ -524,10 +543,15 @@ export const HomeView: React.FC = () => {
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-3xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-                    {c.avatar}
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 overflow-hidden flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0">
+                    <MediaImage
+                      src={c.photo || c.avatarImage}
+                      alt={c.name}
+                      fallbackIcon={c.avatar}
+                      className="w-full h-full object-cover"
+                    />
                     {c.isVip && (
-                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md">
+                      <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center shadow-md z-10">
                         <Crown className="w-3.5 h-3.5 fill-slate-950" />
                       </span>
                     )}

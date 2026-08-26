@@ -2,6 +2,9 @@ export interface Store {
   id: number;
   name: string;
   icon: string;
+  image?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
   category: string;
   rating: number;
   products: number;
@@ -29,6 +32,8 @@ export interface Product {
   store: string;
   storeId: number;
   icon: string;
+  image?: string;
+  imageUrl?: string;
   badge?: string | null;
   stock?: number;
   category?: string;
@@ -47,15 +52,22 @@ export interface CraftsmanReviewItem {
   id?: string;
   name: string;
   avatar: string;
+  avatarImage?: string;
   rating: number;
   date: string;
   text: string;
+  wilaya?: string;
+  serviceTag?: string;
+  verifiedCustomer?: boolean;
+  likes?: number;
 }
 
 export interface Craftsman {
   id: number;
   name: string;
   avatar: string;
+  avatarImage?: string;
+  photo?: string;
   profession: string;
   city: string;
   phone: string;

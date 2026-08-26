@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Crown
 } from 'lucide-react';
+import { MediaImage } from '../components/MediaImage';
 
 export const StoresView: React.FC = () => {
   const { stores, categories, navigateTo, setIsAddStoreModalOpen, setIsVipModalOpen } = useApp();
@@ -34,14 +35,13 @@ export const StoresView: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-8 max-w-7xl mx-auto">
-      
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
         <h1 className="text-3xl sm:text-5xl font-black text-white">
           اكتشف <span className="text-[#00d4c8]">المحلات والمتاجر</span>
         </h1>
         <p className="text-sm text-slate-400">
-          تصفح قائمة المتاجر المعتمدة في مختلف المجالات، مع أولوية الظهور للمشتركين بـ VIP المميزين
+          تصفح قائمة المتاجر المعتمدة في مختلف المجالات بالجزائر، مع أولوية الظهور للمشتركين بـ VIP المميزين
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export const StoresView: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث عن متجر أو تصنيف (مثال: أزياء، إلكترونيات، سوبر ماركت)..."
+            placeholder="ابحث عن متجر أو تصنيف (مثال: أزياء، إلكترونيات، مواد بناء)..."
             className="w-full pr-12 pl-4 py-3.5 rounded-2xl bg-[#1a1a24] border border-[#2a2a3a] text-white text-sm focus:outline-none focus:border-[#00d4c8] shadow-lg transition-colors placeholder:text-slate-500"
           />
         </div>
@@ -127,9 +127,14 @@ export const StoresView: React.FC = () => {
                     <span>{store.rating}</span>
                   </div>
 
-                  {/* Logo */}
-                  <div className="absolute -bottom-8 right-6 w-18 h-18 rounded-2xl bg-[#0a0a0f] border-4 border-[#1a1a24] flex items-center justify-center text-4xl shadow-xl group-hover:scale-105 transition-transform">
-                    {store.icon}
+                  {/* Real Logo / MediaImage */}
+                  <div className="absolute -bottom-8 right-6 w-18 h-18 rounded-2xl bg-[#0a0a0f] border-4 border-[#1a1a24] overflow-hidden flex items-center justify-center text-4xl shadow-xl group-hover:scale-105 transition-transform">
+                    <MediaImage
+                      src={store.image}
+                      alt={store.name}
+                      fallbackIcon={store.icon}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
 

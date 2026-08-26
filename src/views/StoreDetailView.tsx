@@ -10,8 +10,10 @@ import {
   Plus,
   Search,
   CheckCircle2,
-  Share2
+  Share2,
+  Crown
 } from 'lucide-react';
+import { MediaImage } from '../components/MediaImage';
 
 export const StoreDetailView: React.FC = () => {
   const { stores, products, selectedStoreId, navigateTo, addToCart, toggleFavorite, favorites, showToast } = useApp();
@@ -27,11 +29,9 @@ export const StoreDetailView: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-20 pb-20">
-      
       {/* Store Hero Header */}
       <div className={`relative bg-gradient-to-b ${store.bannerColor || 'from-cyan-950/80 via-[#1a1a24] to-[#0a0a0f]'} border-b border-[#2a2a3a] px-4 sm:px-8 py-12`}>
         <div className="max-w-7xl mx-auto">
-          
           <button
             onClick={() => navigateTo('stores')}
             className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-[#00d4c8] transition-colors"
@@ -41,10 +41,14 @@ export const StoreDetailView: React.FC = () => {
           </button>
 
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            
-            {/* Logo */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#0a0a0f] border-4 border-[#1a1a24] flex items-center justify-center text-5xl sm:text-6xl shadow-2xl shrink-0">
-              {store.icon}
+            {/* Real Store Logo / MediaImage */}
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#0a0a0f] border-4 border-[#1a1a24] overflow-hidden flex items-center justify-center text-5xl sm:text-6xl shadow-2xl shrink-0">
+              <MediaImage
+                src={store.image}
+                alt={store.name}
+                fallbackIcon={store.icon}
+                className="w-full h-full object-cover"
+              />
             </div>
 
             {/* Info */}
@@ -56,8 +60,13 @@ export const StoreDetailView: React.FC = () => {
                 </span>
                 <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  بائع معتمد
+                  بائع معتمد 🇩🇿
                 </span>
+                {store.isVip && (
+                  <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-xs font-black flex items-center gap-1 shadow-md">
+                    <Crown className="w-3.5 h-3.5 fill-slate-950" /> متجر VIP
+                  </span>
+                )}
               </div>
 
               <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
@@ -102,14 +111,13 @@ export const StoreDetailView: React.FC = () => {
 
       {/* Store Products Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-12">
-        
         {/* Search header within store */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white">
               منتجات <span className="text-[#00d4c8]">{store.name}</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">تسوق مباشرة من هذا المتجر واطلب بأفضل الأسعار</p>
+            <p className="text-xs text-slate-400 mt-1">تسوق مباشرة من هذا المتجر واطلب بأفضل الأسعار المعتمدة</p>
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -138,17 +146,20 @@ export const StoreDetailView: React.FC = () => {
               return (
                 <div
                   key={prod.id}
-                  className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group"
+                  className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group shadow-xl"
                 >
                   <div>
-                    {/* Box Icon/Image */}
-                    <div className="h-52 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center text-7xl p-4 overflow-hidden">
-                      <span className="group-hover:scale-110 transition-transform duration-300">
-                        {prod.icon}
-                      </span>
+                    {/* Media Image Box */}
+                    <div className="h-52 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center overflow-hidden">
+                      <MediaImage
+                        src={prod.image}
+                        alt={prod.name}
+                        fallbackIcon={prod.icon}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
 
                       {prod.badge && (
-                        <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30">
+                        <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30 z-10">
                           {prod.badge}
                         </span>
                       )}
@@ -158,7 +169,7 @@ export const StoreDetailView: React.FC = () => {
                           e.stopPropagation();
                           toggleFavorite(prod.id);
                         }}
-                        className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all ${
+                        className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all z-10 ${
                           isFav
                             ? 'bg-[#ff3366] text-white'
                             : 'bg-black/40 text-slate-300 hover:text-white'
@@ -184,11 +195,11 @@ export const StoreDetailView: React.FC = () => {
 
                       <div className="flex items-baseline gap-2 pt-1">
                         <span className="text-lg font-black text-[#00d4c8]">
-                          {prod.price} ر.س
+                          {prod.price.toLocaleString()} د.ج
                         </span>
                         {prod.oldPrice && (
                           <span className="text-xs text-slate-500 line-through">
-                            {prod.oldPrice} ر.س
+                            {prod.oldPrice.toLocaleString()} د.ج
                           </span>
                         )}
                       </div>

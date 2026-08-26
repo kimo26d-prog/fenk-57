@@ -7,8 +7,11 @@ import {
   Plus,
   Filter,
   ArrowUpDown,
-  Store as StoreIcon
+  Store as StoreIcon,
+  Sparkles,
+  Camera
 } from 'lucide-react';
+import { MediaImage } from '../components/MediaImage';
 
 export const ProductsView: React.FC = () => {
   const { products, categories, addToCart, toggleFavorite, favorites, navigateTo } = useApp();
@@ -36,14 +39,17 @@ export const ProductsView: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto">
-      
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00d4c8]/10 border border-[#00d4c8]/30 text-[#00d4c8] text-xs font-bold mb-2">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>سوق المنتجات الحقيقية عبر 69 ولاية جزائرية 🇩🇿</span>
+        </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white">
           جميع <span className="text-[#00d4c8]">المنتجات</span>
         </h1>
         <p className="text-sm text-slate-400">
-          تسوق آلاف المنتجات المميزة والأصلية من مختلف المحلات التجارية في مكان واحد
+          تسوق آلاف المنتجات المميزة والأصلية مع صور وتفاصيل حقيقية من مختلف المتاجر الجزائرية
         </p>
       </div>
 
@@ -55,7 +61,7 @@ export const ProductsView: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث عن منتج أو متجر (مثال: آيفون، قميص، عطر)..."
+            placeholder="ابحث عن منتج أو متجر (مثال: حذاء، عطر، إسمنت، هاتف)..."
             className="w-full pr-12 pl-4 py-3.5 rounded-2xl bg-[#1a1a24] border border-[#2a2a3a] text-white text-sm focus:outline-none focus:border-[#00d4c8] shadow-lg transition-colors placeholder:text-slate-500"
           />
         </div>
@@ -108,17 +114,20 @@ export const ProductsView: React.FC = () => {
             return (
               <div
                 key={prod.id}
-                className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group"
+                className="bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00d4c8]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group shadow-xl"
               >
                 <div>
-                  {/* Image / Icon container */}
-                  <div className="h-52 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center text-7xl p-4 overflow-hidden">
-                    <span className="group-hover:scale-110 transition-transform duration-300">
-                      {prod.icon}
-                    </span>
+                  {/* Real Photo / Media Image container */}
+                  <div className="h-56 bg-gradient-to-b from-[#12121a] to-[#0a0a0f] relative flex items-center justify-center overflow-hidden">
+                    <MediaImage
+                      src={prod.image}
+                      alt={prod.name}
+                      fallbackIcon={prod.icon}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
 
                     {prod.badge && (
-                      <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30">
+                      <span className="absolute top-3.5 right-3.5 px-3 py-1 rounded-full bg-[#ff3366] text-white text-[11px] font-black shadow-lg shadow-[#ff3366]/30 z-10">
                         {prod.badge}
                       </span>
                     )}
@@ -128,10 +137,10 @@ export const ProductsView: React.FC = () => {
                         e.stopPropagation();
                         toggleFavorite(prod.id);
                       }}
-                      className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all ${
+                      className={`absolute top-3.5 left-3.5 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all z-10 ${
                         isFav
-                          ? 'bg-[#ff3366] text-white'
-                          : 'bg-black/40 text-slate-300 hover:text-white'
+                          ? 'bg-[#ff3366] text-white shadow-lg shadow-[#ff3366]/40'
+                          : 'bg-black/50 text-slate-300 hover:text-white'
                       }`}
                     >
                       <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
@@ -160,11 +169,11 @@ export const ProductsView: React.FC = () => {
 
                     <div className="flex items-baseline gap-2 pt-1">
                       <span className="text-lg font-black text-[#00d4c8]">
-                        {prod.price} ر.س
+                        {prod.price.toLocaleString()} د.ج
                       </span>
                       {prod.oldPrice && (
                         <span className="text-xs text-slate-500 line-through">
-                          {prod.oldPrice} ر.س
+                          {prod.oldPrice.toLocaleString()} د.ج
                         </span>
                       )}
                     </div>

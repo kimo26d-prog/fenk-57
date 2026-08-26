@@ -142,8 +142,12 @@ interface AppContextType {
   deleteStore: (id: number) => void;
   addNewProduct: (productData: Partial<Product>) => void;
   deleteProduct: (id: number) => void;
+  updateProductImage: (productId: number, imageUrl: string) => void;
   registerCraftsman: (craftsmanData: Partial<Craftsman>) => void;
   approveCraftsman: (id: number) => void;
+  addCraftsmanGalleryPhoto: (craftsmanId: number, photoUrl: string) => void;
+  addCraftsmanReview: (craftsmanId: number, review: { name: string; rating: number; text: string; avatar?: string; wilaya?: string; serviceTag?: string }) => void;
+  likeCraftsmanReview: (craftsmanId: number, reviewIndex: number) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
 
   // Live Chat
@@ -191,12 +195,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('fenk_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+    if (!saved) return INITIAL_PRODUCTS;
+    try {
+      const parsed: Product[] = JSON.parse(saved);
+      // Merge with initial products to ensure all high-res real photos and new items are present
+      const initialMap = new Map(INITIAL_PRODUCTS.map((p) => [p.id, p]));
+      const updated = parsed.map((p) => {
+        const init = initialMap.get(p.id);
+        if (init && (!p.image || !p.image.startsWith('http'))) {
+          return { ...p, image: init.image, imageUrl: init.image };
+        }
+        return p;
+      });
+      // Append any new initial items that might not be in localStorage
+      INITIAL_PRODUCTS.forEach((init) => {
+        if (!updated.some((p) => p.id === init.id)) {
+          updated.push(init);
+        }
+      });
+      return updated;
+    } catch {
+      return INITIAL_PRODUCTS;
+    }
   });
 
   const [craftsmen, setCraftsmen] = useState<Craftsman[]>(() => {
     const saved = localStorage.getItem('fenk_craftsmen');
-    return saved ? JSON.parse(saved) : INITIAL_CRAFTSMEN;
+    if (!saved) return INITIAL_CRAFTSMEN;
+    try {
+      const parsed: Craftsman[] = JSON.parse(saved);
+      const initialMap = new Map(INITIAL_CRAFTSMEN.map((c) => [c.id, c]));
+      return parsed.map((c) => {
+        const init = initialMap.get(c.id);
+        if (init) {
+          return {
+            ...c,
+            photo: c.photo || init.photo,
+            avatarImage: c.avatarImage || init.avatarImage,
+            gallery: c.gallery && c.gallery.length > 0 ? c.gallery : init.gallery,
+            reviewsList: c.reviewsList && c.reviewsList.length > 0 ? c.reviewsList : init.reviewsList
+          };
+        }
+        return c;
+      });
+    } catch {
+      return INITIAL_CRAFTSMEN;
+    }
   });
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -1060,6 +1104,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       store: currentStore?.name || 'محل الأناقة الفاخرة',
       storeId: currentStore?.id || 1,
       icon: productData.icon || '📦',
+      image: productData.image || productData.imageUrl || undefined,
+      imageUrl: productData.image || productData.imageUrl || undefined,
       badge: productData.badge || 'جديد',
       stock: productData.stock || 20,
       category: productData.category || currentStore?.category || 'أزياء',
@@ -1072,7 +1118,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((s) => (s.id === newProd.storeId ? { ...s, products: s.products + 1 } : s))
     );
     setIsAddProductModalOpen(false);
-    showToast('success', 'تمت إضافة المنتج', `تم إضافة "${newProd.name}" إلى متجرك`);
+    showToast('success', 'تمت إضافة المنتج بنجاح', `تم إضافة "${newProd.name}" إلى متجرك مع الصورة المرفقة`);
+  };
+
+  const updateProductImage = (productId: number, imageUrl: string) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, image: imageUrl, imageUrl } : p))
+    );
+    showToast('success', 'تم تحديث الصورة', 'تم حفظ صورة المنتج الجديدة بنجاح');
   };
 
   const deleteProduct = (id: number) => {
@@ -1087,14 +1140,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const registerCraftsman = (craftsmanData: Partial<Craftsman>) => {
     const newId = craftsmen.length > 0 ? Math.max(...craftsmen.map((c) => c.id)) + 1 : 1;
+    const fallbackGalleries = [
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=500&auto=format&fit=crop&q=80'
+    ];
+
     const newC: Craftsman = {
       id: newId,
       name: craftsmanData.name || 'حرفي جديد',
       avatar: craftsmanData.avatar || '👷‍♂️',
+      photo: craftsmanData.photo || craftsmanData.avatarImage || undefined,
+      avatarImage: craftsmanData.photo || craftsmanData.avatarImage || undefined,
       profession: craftsmanData.profession || 'فني صيانة',
-      city: craftsmanData.city || 'الرياض',
-      phone: craftsmanData.phone || '05xxxxxxxx',
-      whatsapp: craftsmanData.phone ? '966' + craftsmanData.phone.replace(/^0/, '') : '966500000000',
+      city: craftsmanData.city || 'الجزائر العاصمة',
+      phone: craftsmanData.phone || '0555000000',
+      whatsapp: craftsmanData.phone ? '213' + craftsmanData.phone.replace(/^0/, '') : '213555000000',
       bio: craftsmanData.bio || 'خبير فني متمرس ومستعد لتنفيذ جميع الطلبات بدقة.',
       experience: craftsmanData.experience || 5,
       mobility: craftsmanData.mobility ?? true,
@@ -1102,7 +1163,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reviews: 1,
       jobs: 1,
       skills: craftsmanData.skills?.length ? craftsmanData.skills : [craftsmanData.profession || 'صيانة عامة'],
-      gallery: ['🔧', '🛠️', '🧱', '📐', '⚙️', '🔨'],
+      gallery: craftsmanData.gallery && craftsmanData.gallery.length > 0 ? craftsmanData.gallery : fallbackGalleries,
       reviewsList: [
         {
           name: 'إدارة المنصة',
@@ -1118,8 +1179,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCraftsmen((prev) => [newC, ...prev]);
     setIsCraftsmanRegisterModalOpen(false);
-    showToast('success', 'أهلاً بك كحرفي معتمد!', 'تم تسجيل حسابك بنجاح وملفك متاح الآن للعملاء');
+    showToast('success', 'أهلاً بك كحرفي معتمد!', 'تم تسجيل حسابك بنجاح وملفك متاح الآن للعملاء مع معرض أعمالك');
     addNotification('service', 'تسجيل حرفي جديد', `انضم الحرفي ${newC.name} (${newC.profession}) في ${newC.city}`);
+  };
+
+  const addCraftsmanGalleryPhoto = (craftsmanId: number, photoUrl: string) => {
+    setCraftsmen((prev) =>
+      prev.map((c) => {
+        if (c.id === craftsmanId) {
+          const currentGallery = c.gallery || [];
+          return {
+            ...c,
+            gallery: [photoUrl, ...currentGallery]
+          };
+        }
+        return c;
+      })
+    );
+    showToast('success', 'تمت إضافة صورة المعرض', 'تم حفظ صورة إنجاز العمل بنجاح في ملفك');
   };
 
   const approveCraftsman = (id: number) => {
@@ -1127,6 +1204,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((c) => (c.id === id ? { ...c, verified: true, status: 'active' } : c))
     );
     showToast('success', 'تم اعتماد الحرفي', 'تم تفعيل الحساب وتوثيقه بنجاح');
+  };
+
+  const addCraftsmanReview = (
+    craftsmanId: number,
+    review: {
+      name: string;
+      rating: number;
+      text: string;
+      avatar?: string;
+      wilaya?: string;
+      serviceTag?: string;
+    }
+  ) => {
+    setCraftsmen((prev) =>
+      prev.map((c) => {
+        if (c.id === craftsmanId) {
+          const newReviewItem = {
+            id: `rev-${Date.now()}`,
+            name: review.name.trim() || 'عميل محترم',
+            avatar: review.avatar || '👤',
+            rating: review.rating,
+            date: 'اليوم',
+            text: review.text.trim(),
+            wilaya: review.wilaya || c.city,
+            serviceTag: review.serviceTag || c.profession,
+            verifiedCustomer: true,
+            likes: 0
+          };
+          const updatedReviewsList = [newReviewItem, ...(c.reviewsList || [])];
+          const totalReviews = updatedReviewsList.length;
+          const totalRatingSum = updatedReviewsList.reduce((sum, r) => sum + r.rating, 0);
+          const calculatedRating = Number((totalRatingSum / totalReviews).toFixed(1));
+
+          return {
+            ...c,
+            rating: calculatedRating,
+            reviews: totalReviews,
+            reviewsList: updatedReviewsList
+          };
+        }
+        return c;
+      })
+    );
+    playSuccessSound();
+    showToast('success', 'شكراً لتقييمك!', 'تم نشر تقييمك ورأيك حول الخدمة وتحديث معدل تقييم الحرفي بنجاح ⭐');
+    addNotification('service', 'تقييم جديد للحرفي', `أضاف العميل ${review.name} تقييماً (${review.rating}/5 نجوم) للحرفي`);
+  };
+
+  const likeCraftsmanReview = (craftsmanId: number, reviewIndex: number) => {
+    setCraftsmen((prev) =>
+      prev.map((c) => {
+        if (c.id === craftsmanId) {
+          const list = [...(c.reviewsList || [])];
+          if (list[reviewIndex]) {
+            list[reviewIndex] = {
+              ...list[reviewIndex],
+              likes: (list[reviewIndex].likes || 0) + 1
+            };
+            return { ...c, reviewsList: list };
+          }
+        }
+        return c;
+      })
+    );
+    showToast('info', 'شكراً لمشاركتك', 'تم تسجيل إعجابك برأي العميل');
   };
 
   const updateOrderStatus = (orderId: string, status: Order['status']) => {
@@ -1397,8 +1539,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteStore,
         addNewProduct,
         deleteProduct,
+        updateProductImage,
         registerCraftsman,
         approveCraftsman,
+        addCraftsmanGalleryPhoto,
+        addCraftsmanReview,
+        likeCraftsmanReview,
         updateOrderStatus,
         reorderOrder,
         reorderSingleProduct,

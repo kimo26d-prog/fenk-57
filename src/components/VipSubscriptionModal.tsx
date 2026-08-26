@@ -277,8 +277,8 @@ export const VipSubscriptionModal: React.FC<VipSubscriptionModalProps> = ({
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   >
                     {ALGERIAN_WILAYAS.map((w) => (
-                      <option key={w.code} value={w.name} className="bg-slate-900 text-white">
-                        {w.code} - {w.name} ({w.arName})
+                      <option key={w.code} value={w.ar || w.name} className="bg-slate-900 text-white">
+                        {w.code} - {w.ar} ({w.name})
                       </option>
                     ))}
                   </select>
